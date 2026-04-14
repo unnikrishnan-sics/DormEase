@@ -1,5 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const User = require('./models/User');
+
 const cors = require('cors');
 const dotenv = require('dotenv');
 
@@ -14,8 +16,29 @@ app.use(express.json());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dormease')
-    .then(() => console.log('MongoDB connected successfully'))
+    .then(async () => {
+        console.log('MongoDB connected successfully');
+        
+        // Auto-seed Admin if not exists
+        try {
+            const adminExists = await User.findOne({ role: 'Admin' });
+            if (!adminExists) {
+                console.log('No Admin found, auto-seeding default admin...');
+                await User.create({
+                    name: 'System Admin',
+                    email: 'admin@gmail.com',
+                    password: 'admin@123',
+                    role: 'Admin',
+                    isFirstLogin: false
+                });
+                console.log('✅ Default Admin created: admin@gmail.com / admin@123');
+            }
+        } catch (err) {
+            console.error('Auto-seeding error:', err);
+        }
+    })
     .catch((err) => console.error('MongoDB connection error:', err));
+
 
 // Basic Route
 app.get('/', (req, res) => {
