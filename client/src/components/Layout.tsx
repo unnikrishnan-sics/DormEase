@@ -95,7 +95,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 >
                   {item.icon}
                 </ListItemIcon>
-                {open && <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0 }} primaryTypographyProps={{ fontWeight: 600 }} />}
+                {open && (
+                  <ListItemText 
+                    primary={<Typography variant="body2" fontWeight={600}>{item.text}</Typography>} 
+                    sx={{ opacity: open ? 1 : 0 }} 
+                  />
+                )}
+
               </ListItemButton>
             </Tooltip>
           </ListItem>

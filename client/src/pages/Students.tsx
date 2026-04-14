@@ -1,9 +1,10 @@
-import { Typography, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, Chip, Button, TextField, InputAdornment, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Snackbar, Alert, CircularProgress } from '@mui/material';
+import React from 'react';
+import { Typography, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, Chip, Button, TextField, InputAdornment, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Snackbar, Alert, CircularProgress, Divider } from '@mui/material';
+import { Search, Add, FileDownload, Visibility, Delete } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import api from '../services/api';
 
 const Students: React.FC = () => {
-
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [snackbar, setSnackbar] = React.useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
@@ -23,7 +24,6 @@ const Students: React.FC = () => {
       const res = await api.get('/students');
       setStudents(res.data);
     } catch (err) {
-
       console.error(err);
     } finally {
       setFetching(false);
@@ -47,7 +47,6 @@ const Students: React.FC = () => {
     try {
       await api.post('/students', formData);
       setSnackbar({ open: true, message: 'Student added and credentials emailed!', severity: 'success' });
-
       handleClose();
       fetchStudents();
       setFormData({ name: '', email: '', phone: '', permanentAddress: '', parentGuardianName: '', emergencyContact: '' });
@@ -55,6 +54,18 @@ const Students: React.FC = () => {
       setSnackbar({ open: true, message: err.response?.data?.message || 'Error adding student', severity: 'error' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to remove this student?')) {
+      try {
+        await api.delete(`/students/${id}`);
+        setSnackbar({ open: true, message: 'Student removed successfully', severity: 'success' });
+        fetchStudents();
+      } catch (err: any) {
+        setSnackbar({ open: true, message: 'Error deleting student', severity: 'error' });
+      }
     }
   };
 
@@ -144,12 +155,13 @@ const Students: React.FC = () => {
                     label={s.bookingStatus} 
                     size="small" 
                     color={s.bookingStatus === 'Allocated' ? 'success' : 'warning'} 
-                    variant="soft"
+                    variant="outlined"
                     sx={{ fontWeight: 600 }}
                   />
                 </TableCell>
                 <TableCell align="right">
-                  <Button size="small" variant="text" sx={{ fontWeight: 600 }}>View Detail</Button>
+                  <Button size="small" variant="text" startIcon={<Visibility />} sx={{ fontWeight: 600 }}>View</Button>
+                  <Button size="small" variant="text" color="error" startIcon={<Delete />} sx={{ fontWeight: 600 }} onClick={() => handleDelete(s._id)}>Delete</Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -210,6 +222,5 @@ const Students: React.FC = () => {
     </Box>
   );
 };
-
 
 export default Students;
