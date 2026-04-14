@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Paper, Typography, TextField, Button, Link, Container, Alert, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('admin@gmail.com');
@@ -20,10 +21,11 @@ const Login: React.FC = () => {
     setLoading(true);
     
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await api.post('/auth/login', {
         email,
         password
       });
+
       
       const { token, ...userData } = response.data;
       login({ user: userData, token });

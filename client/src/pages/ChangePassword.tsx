@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Container, Paper, Typography, TextField, Button, Alert, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+
 import { motion } from 'framer-motion';
 
 const ChangePassword: React.FC = () => {
@@ -25,9 +26,10 @@ const ChangePassword: React.FC = () => {
 
     setLoading(true);
     try {
-      await axios.put('http://localhost:5000/api/auth/change-password', { password: newPassword });
+      await api.put('/auth/change-password', { password: newPassword });
       
       // Update local user state (set isFirstLogin to false)
+
       if (user) {
         const updatedUser = { ...user, isFirstLogin: false };
         const token = localStorage.getItem('dormease_token');

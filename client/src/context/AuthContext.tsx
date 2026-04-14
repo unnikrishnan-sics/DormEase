@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+
 
 interface User {
   _id: string;
@@ -31,9 +31,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
       setToken(storedToken);
-      // Set default axios header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
     }
+
     setLoading(false);
   }, []);
 
@@ -42,16 +41,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(data.token);
     localStorage.setItem('dormease_user', JSON.stringify(data.user));
     localStorage.setItem('dormease_token', data.token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
   };
+
 
   const logout = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('dormease_user');
     localStorage.removeItem('dormease_token');
-    delete axios.defaults.headers.common['Authorization'];
   };
+
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, loading }}>

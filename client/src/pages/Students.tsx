@@ -1,9 +1,9 @@
 import { Typography, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, Chip, Button, TextField, InputAdornment, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Snackbar, Alert, CircularProgress } from '@mui/material';
-import { Search, Add, FileDownload } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import api from '../services/api';
 
 const Students: React.FC = () => {
+
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [snackbar, setSnackbar] = React.useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
@@ -20,9 +20,10 @@ const Students: React.FC = () => {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/students');
+      const res = await api.get('/students');
       setStudents(res.data);
     } catch (err) {
+
       console.error(err);
     } finally {
       setFetching(false);
@@ -44,8 +45,9 @@ const Students: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/students', formData);
+      await api.post('/students', formData);
       setSnackbar({ open: true, message: 'Student added and credentials emailed!', severity: 'success' });
+
       handleClose();
       fetchStudents();
       setFormData({ name: '', email: '', phone: '', permanentAddress: '', parentGuardianName: '', emergencyContact: '' });
