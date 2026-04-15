@@ -2,49 +2,69 @@ import { createTheme } from '@mui/material/styles';
 
 export const theme = createTheme({
   palette: {
+    mode: 'light',
     primary: {
-      main: '#2563EB', // Blue
+      main: '#2B5A81', // Brand Navy
+      contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#14B8A6', // Teal
+      main: '#52A89E', // Brand Teal
+      contrastText: '#FFFFFF',
     },
     background: {
-      default: '#FFFFFF',
+      default: '#F8FAFC', 
+      paper: '#FFFFFF',
     },
     text: {
-      primary: '#1F2937', // Dark Gray
+      primary: '#0F172A',
+      secondary: '#64748B',
     },
     success: {
-      main: '#22C55E', // Green
+      main: '#14B8A6',
     },
     error: {
-      main: '#EF4444', // Red
+      main: '#F43F5E',
     },
   },
   typography: {
     fontFamily: '"Outfit", "Inter", "Roboto", sans-serif',
     h1: {
-      fontWeight: 700,
+      fontWeight: 900,
     },
     h2: {
-      fontWeight: 600,
+      fontWeight: 800,
     },
+    h3: {
+      fontWeight: 800,
+    },
+  },
+  shape: {
+    borderRadius: 12,
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 12,
           textTransform: 'none',
-          fontWeight: 600,
+          fontWeight: 700,
+          padding: '10px 24px',
         },
       },
     },
-    MuiCard: {
+    MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+          backgroundImage: 'none',
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 12,
+          },
         },
       },
     },

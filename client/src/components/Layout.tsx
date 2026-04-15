@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Drawer, AppBar, Toolbar, List, Typography, Divider, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip, useTheme, useMediaQuery } from '@mui/material';
-import { Menu as MenuIcon, Dashboard, Bed, People, Receipt, Message, Fastfood, Assessment, ExitToApp, ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { Menu as MenuIcon, Dashboard, Bed, People, Groups, Receipt, Message, Fastfood, Assessment, ExitToApp, ChevronLeft, ChevronRight, Person } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -34,11 +34,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const allMenuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard', roles: ['Admin', 'Student', 'Staff'] },
     { text: 'Rooms', icon: <Bed />, path: '/rooms', roles: ['Admin'] },
+    { text: 'My Room', icon: <Bed />, path: '/room-detail', roles: ['Student'] },
     { text: 'Students', icon: <People />, path: '/students', roles: ['Admin', 'Staff'] },
+    { text: 'Team', icon: <Groups />, path: '/staff', roles: ['Admin'] },
     { text: 'Payments', icon: <Receipt />, path: '/payments', roles: ['Admin', 'Student'] },
     { text: 'Complaints', icon: <Message />, path: '/complaints', roles: ['Admin', 'Student', 'Staff'] },
     { text: 'Mess Menu', icon: <Fastfood />, path: '/mess', roles: ['Admin', 'Student', 'Staff'] },
-    { text: 'Analytics', icon: <Assessment />, path: '/analytics', roles: ['Admin'] },
+    { text: 'My Profile', icon: <Person />, path: '/profile', roles: ['Student'] },
   ];
 
   const menuItems = allMenuItems.filter(item => item.roles.includes(user?.role || ''));
@@ -187,7 +189,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" color="text.primary" fontWeight="bold">
+          <Typography variant="h6" noWrap component="div" sx={{ color: '#0F172A', fontWeight: 800 }}>
             {currentTitle}
           </Typography>
         </Toolbar>

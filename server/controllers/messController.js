@@ -30,7 +30,7 @@ exports.updateMessMenu = async (req, res) => {
             menu.lunch = lunch || menu.lunch;
             menu.snacks = snacks || menu.snacks;
             menu.dinner = dinner || menu.dinner;
-            menu.specialNote = specialNote || menu.specialNote;
+            if (specialNote !== undefined) menu.specialNote = specialNote;
             await menu.save();
         } else {
             menu = await MessMenu.create({
@@ -62,8 +62,8 @@ exports.suggestMenu = async (req, res) => {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
-        
-        const suggestedData = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+        const cleanText = text.replace(/```json|```/g, "").trim();
+        const suggestedData = JSON.parse(cleanText.substring(cleanText.indexOf('{'), cleanText.lastIndexOf('}') + 1));
         res.json(suggestedData);
     } catch (error) {
         res.status(500).json({ message: 'AI suggestion failed: ' + error.message });

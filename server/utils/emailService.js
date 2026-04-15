@@ -68,4 +68,84 @@ const sendCredentialsEmail = async (email, name, password) => {
     }
 };
 
-module.exports = { sendCredentialsEmail };
+/**
+ * Send subscription expiration reminder
+ */
+const sendExpirationReminderEmail = async (email, name, roomNumber, endDate) => {
+    const mailOptions = {
+        from: `"${process.env.FROM_NAME}" <${process.env.SMTP_EMAIL}>`,
+        to: email,
+        subject: 'Action Required: Your DormEase Subscription is Expiring Soon',
+        html: `
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; p: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h1 style="color: #2563EB; margin: 0; font-size: 24px;">DORMEASE</h1>
+                </div>
+                <div style="padding: 24px; background-color: #fffaf0; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <h2 style="color: #92400e; margin-top: 0;">Subscription Ending Soon</h2>
+                    <p style="color: #475569; line-height: 1.6;">
+                        Hi ${name}, your stay duration for <strong>Room ${roomNumber}</strong> is scheduled to end on <strong>${new Date(endDate).toLocaleDateString()}</strong>.
+                    </p>
+                    <p style="color: #475569; line-height: 1.6;">
+                        To avoid any allocation issues or service interruptions, please visit the dashboard to renew your package.
+                    </p>
+                    <div style="margin: 25px 0; text-align: center;">
+                        <a href="${process.env.CLIENT_URL}/payments" style="background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Renew Plan Now</a>
+                    </div>
+                </div>
+                <p style="text-align: center; color: #94a3b8; font-size: 11px; margin-top: 20px;">
+                    If you have already renewed or plan to move out, please ignore this email.
+                </p>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        console.error('Error sending expiration email:', error);
+        return false;
+    }
+};
+
+/**
+ * Send billing notification for new invoices
+ */
+const sendBillingNotificationEmail = async (email, name, amount) => {
+    const mailOptions = {
+        from: `"${process.env.FROM_NAME}" <${process.env.SMTP_EMAIL}>`,
+        to: email,
+        subject: 'New Invoice Issued - DormEase',
+        html: `
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; p: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h1 style="color: #2563EB; margin: 0; font-size: 24px;">DORMEASE</h1>
+                </div>
+                <div style="padding: 24px; background-color: #f0fdf4; border-radius: 8px; border-left: 4px solid #10b981;">
+                    <h2 style="color: #065f46; margin-top: 0;">New Bill Generated</h2>
+                    <p style="color: #475569; line-height: 1.6;">
+                        Hi ${name}, a new invoice of <strong>$${amount.toLocaleString()}</strong> has been issued for your current billing cycle.
+                    </p>
+                    <div style="margin: 25px 0; text-align: center;">
+                        <a href="${process.env.CLIENT_URL}/payments" style="background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View & Pay Invoice</a>
+                    </div>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        console.error('Error sending billing email:', error);
+        return false;
+    }
+};
+
+module.exports = { 
+    sendCredentialsEmail, 
+    sendExpirationReminderEmail,
+    sendBillingNotificationEmail
+};

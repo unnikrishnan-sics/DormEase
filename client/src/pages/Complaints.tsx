@@ -1,134 +1,253 @@
-import React from 'react';
-import { Typography, Box, Grid, Card, CardContent, Chip, Button, TextField, List, ListItem, ListItemText, Divider, Paper } from '@mui/material';
-import { AutoAwesome, Warning, CheckCircle, HourglassEmpty } from '@mui/icons-material';
-
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { 
+  Typography, Box, Grid, Card, CardContent, Chip, Button, TextField, 
+  List, ListItem, ListItemText, Divider, Paper, Dialog, DialogTitle, 
+  DialogContent, DialogActions, MenuItem, CircularProgress, Snackbar, Alert,
+  Avatar, Tooltip
+} from '@mui/material';
+import { 
+  AutoAwesome, Warning, CheckCircle, HourglassEmpty, FilterList, 
+  Search, History, Flag, Person, Category, Update, Construction
+} from '@mui/icons-material';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const Complaints: React.FC = () => {
-  const complaints = [
-    { 
-      id: 1, 
-      user: 'John Doe', 
-      issue: 'AC not working in Room 101', 
-      status: 'Logged', 
-      priority: 'High', 
-      date: '2026-04-14',
-      aiSummary: 'AC Unit malfunction in Room 101. Requires electrician.',
-      aiSentiment: 'Negative',
-      aiSuggestedResponse: 'Hello John, we have logged your complaint regarding the AC in Room 101. A technician has been assigned and will be there within 2 hours.'
-    },
-    { id: 2, user: 'Jane Smith', issue: 'Leaking tap in bathroom', status: 'In Progress', priority: 'Medium', date: '2026-04-13' },
-  ];
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin' || user?.role === 'Staff';
+
+  const [complaints, setComplaints] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  
+  // Filtering & Search
+  const [filterStatus, setFilterStatus] = useState('All');
+  const [filterPriority, setFilterPriority] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Dialog States
+  const [resolveOpen, setResolveOpen] = useState(false);
+  const [selectedComplaint, setSelectedComplaint] = useState<any>(null);
+  const [resolutionData, setResolutionData] = useState({
+    status: '',
+    resolutionDetails: ''
+  });
+
+  const fetchComplaints = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/complaints');
+      setComplaints(res.data);
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to fetch complaints', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchComplaints();
+  }, []);
+
+  const handleOpenResolve = (c: any) => {
+    setSelectedComplaint(c);
+    setResolutionData({
+      status: c.status,
+      resolutionDetails: c.resolutionDetails || ''
+    });
+    setResolveOpen(true);
+  };
+
+  const handleUpdateStatus = async () => {
+    try {
+      setUpdating(true);
+      await api.put(`/complaints/${selectedComplaint._id}`, resolutionData);
+      setSnackbar({ open: true, message: 'Complaint updated successfully', severity: 'success' });
+      setResolveOpen(false);
+      fetchComplaints();
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to update complaint', severity: 'error' });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const getPriorityColor = (p: string) => {
+    switch (p) {
+      case 'Urgent': return '#EF4444';
+      case 'High': return '#F97316';
+      case 'Medium': return '#F59E0B';
+      default: return '#10B981';
+    }
+  };
+
+  const getStatusColor = (s: string) => {
+    switch (s) {
+      case 'Logged': return 'error';
+      case 'In Progress': return 'warning';
+      case 'Resolved': return 'success';
+      case 'Closed': return 'default';
+      default: return 'primary';
+    }
+  };
+
+  const filteredComplaints = complaints.filter(c => {
+    const matchesStatus = filterStatus === 'All' || c.status === filterStatus;
+    const matchesPriority = filterPriority === 'All' || c.priority === filterPriority;
+    const matchesSearch = c.description.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         c.userId?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesPriority && matchesSearch;
+  });
+
+  const stats = {
+    total: complaints.length,
+    open: complaints.filter(c => c.status === 'Logged').length,
+    inProgress: complaints.filter(c => c.status === 'In Progress').length,
+    resolved: complaints.filter(c => c.status === 'Resolved' || c.status === 'Closed').length
+  };
 
   return (
     <Box
       component={motion.div}
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" fontWeight="bold">Complaints</Typography>
-        <Button variant="contained" startIcon={<Warning />} sx={{ borderRadius: 2, boxShadow: 4, bgcolor: 'error.main' }}>
-          Report Issue
-        </Button>
-      </Box>
+      <Typography variant="h4" fontWeight="bold" style={{color:"black"}} sx={{ mb: 1 }}>Student Complaints</Typography>
+      <Typography variant="body2" color="textSecondary" sx={{ mb: 4 }}>Manage and resolve student issues with AI assistance.</Typography>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <List sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 4, boxShadow: "0 4px 20px 0 rgba(0,0,0,0.05)", p: 0, overflow: 'hidden' }}>
-            {complaints.map((c, index) => (
-              <React.Fragment key={c.id}>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <ListItem alignItems="flex-start" sx={{ py: 3, px: 4, '&:hover': { bgcolor: 'rgba(0,0,0,0.01)' } }}>
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                          <Typography variant="h6" fontWeight="700">{c.issue}</Typography>
-                          <Chip 
-                            label={c.status} 
-                            size="small" 
-                            color={c.status === 'Logged' ? 'error' : 'warning'} 
-                            sx={{ fontWeight: 'bold', borderRadius: 1.5 }}
-                          />
-                        </Box>
-                      }
-                      secondary={
-                        <Box>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                            <Typography component="span" variant="subtitle2" color="textPrimary" fontWeight="bold">
-                              {c.user}
-                            </Typography>
-                            <Typography variant="caption" color="textSecondary">
-                              • {c.date}
-                            </Typography>
-                          </Box>
-                          {c.aiSummary && (
-                            <Box
-                              component={motion.div}
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: 0.3 }}
-                              sx={{ 
-                                mt: 2, 
-                                p: 2.5, 
-                                bgcolor: 'aliceblue', 
-                                borderRadius: 3, 
-                                border: '1px solid',
-                                borderColor: 'primary.light',
-                                position: 'relative'
-                              }}
-                            >
-                              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                                <AutoAwesome fontSize="small" color="primary" sx={{ mr: 1 }} />
-                                <Typography variant="subtitle2" color="primary.main" fontWeight="800">SMART ANALYSIS</Typography>
-                              </Box>
-                              <Typography variant="body2" sx={{ mb: 1.5, color: 'text.primary', lineHeight: 1.6 }}>
-                                <strong>Summary:</strong> {c.aiSummary}
-                              </Typography>
-                              <Typography variant="body2" sx={{ p: 2, bgcolor: 'white', borderRadius: 2, border: '1px dashed #2563EB', italic: 'true' }}>
-                                <strong>Suggested Response:</strong> {c.aiSuggestedResponse}
-                              </Typography>
-                              <Box sx={{ mt: 2, display: 'flex', gap: 1.5 }}>
-                                <Button size="small" variant="contained" sx={{ borderRadius: 1.5 }}>Use Draft</Button>
-                                <Button size="small" variant="outlined" sx={{ borderRadius: 1.5 }}>Escalate</Button>
-                              </Box>
-                            </Box>
-                          )}
-                        </Box>
-                      }
-                    />
-                  </ListItem>
-                </motion.div>
-                {index < complaints.length - 1 && <Divider component="li" />}
-              </React.Fragment>
-            ))}
-          </List>
-        </Grid>
+      <Paper 
+        sx={{ 
+          p: 8, 
+          textAlign: 'center', 
+          borderRadius: 6,
+          background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
+          border: '1px dashed',
+          borderColor: 'warning.light',
+          minHeight: '400px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 3
+        }}
+        component={motion.div}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Box 
+          sx={{ 
+            p: 3, 
+            borderRadius: '50%', 
+            bgcolor: 'white', 
+            boxShadow: '0 10px 25px -5px rgba(245, 158, 11, 0.1)',
+            display: 'flex'
+          }}
+        >
+          <motion.div
+            animate={{ 
+              scale: [1, 1.1, 1],
+              rotate: [0, 5, -5, 0]
+            }}
+            transition={{ repeat: Infinity, duration: 3 }}
+          >
+            <Construction sx={{ fontSize: 80, color: 'warning.main' }} />
+          </motion.div>
+        </Box>
         
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3, borderRadius: 4, boxShadow: "0 4px 20px 0 rgba(0,0,0,0.05)" }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>Resolution Pulse</Typography>
-            <Box sx={{ mt: 3 }}>
-              {[{ label: 'Open Issues', val: 5, color: '#EF4444' }, { label: 'In Progress', val: 3, color: '#F59E0B' }, { label: 'Resolved Today', val: 12, color: '#10B981' }].map((item) => (
-                <Box key={item.label} sx={{ display: 'flex', justifyContent: 'space-between', mb: 2.5, alignItems: 'center' }}>
-                  <Typography variant="body2" color="textSecondary" fontWeight="medium">{item.label}</Typography>
-                  <Typography variant="h6" fontWeight="bold" sx={{ color: item.color }}>{item.val}</Typography>
-                </Box>
-              ))}
+        <Box>
+          <Typography variant="h4" fontWeight="900" gutterBottom sx={{ color: '#0F172A' }}>
+            System Under Construction
+          </Typography>
+          <Typography variant="body1" color="textSecondary" sx={{ maxWidth: 500, mx: 'auto' }}>
+            Our AI-powered grievance architect is currently offline for maintenance and upgrades. 
+            We're building a smarter way to resolve student concerns.
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+          <Chip label="Smart Auto-Resolve" variant="outlined" color="warning" sx={{ fontWeight: 'bold' }} />
+          <Chip label="Priority Sentiment AI" variant="outlined" color="error" sx={{ fontWeight: 'bold' }} />
+          <Chip label="Automated Staff Routing" variant="outlined" color="primary" sx={{ fontWeight: 'bold' }} />
+        </Box>
+      </Paper>
+
+      {/* Resolution Dialog */}
+      <Dialog open={resolveOpen} onClose={() => setResolveOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 'bold' }}>Update Resolution Status</DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="caption" color="textSecondary">ISSUE DESCRIPTION</Typography>
+            <Typography variant="body1" fontWeight="medium">{selectedComplaint?.description}</Typography>
+          </Box>
+
+          {selectedComplaint?.aiAnalysis && (
+            <Box sx={{ mb: 4, p: 2, bgcolor: '#f0f9ff', borderRadius: 2, border: '1px solid #bae6fd' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <AutoAwesome fontSize="small" color="primary" sx={{ mr: 1 }} />
+                <Typography variant="caption" color="primary.main" fontWeight="bold">AI RECOMMENDED RESPONSE</Typography>
+              </Box>
+              <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+                {selectedComplaint.aiAnalysis.suggestedResponse}
+              </Typography>
             </Box>
-            <Divider sx={{ my: 2 }} />
-            <Button fullWidth variant="soft" color="primary">View Detailed Report</Button>
-          </Paper>
-        </Grid>
-      </Grid>
+          )}
+
+          <Grid container spacing={2}>
+            <Grid xs={12}>
+              <TextField
+                select
+                fullWidth
+                label="Current Status"
+                value={resolutionData.status}
+                onChange={(e) => setResolutionData({ ...resolutionData, status: e.target.value })}
+              >
+                <MenuItem value="Logged">Logged</MenuItem>
+                <MenuItem value="In Progress">In Progress</MenuItem>
+                <MenuItem value="Resolved">Resolved</MenuItem>
+                <MenuItem value="Closed">Closed</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Resolution Details / Private Note"
+                value={resolutionData.resolutionDetails}
+                onChange={(e) => setResolutionData({ ...resolutionData, resolutionDetails: e.target.value })}
+                placeholder="Explain how this issue was handled..."
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => setResolveOpen(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={handleUpdateStatus} 
+            disabled={updating}
+            sx={{ px: 4, borderRadius: 2 }}
+          >
+            {updating ? <CircularProgress size={24} color="inherit" /> : 'Save Resolution'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={4000} 
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert severity={snackbar.severity} variant="filled" sx={{ borderRadius: 2 }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
-
 
 export default Complaints;

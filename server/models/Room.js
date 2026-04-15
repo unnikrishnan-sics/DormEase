@@ -24,7 +24,10 @@ const RoomSchema = new mongoose.Schema({
         enum: ['Available', 'Full', 'Maintenance'],
         default: 'Available'
     },
-    floor: Number
+    floor: Number,
+    price6Months: Number,
+    price12Months: Number,
+    price24Months: Number
 }, { timestamps: true });
 
 module.exports = mongoose.model('Room', RoomSchema);

@@ -109,3 +109,40 @@ exports.changePassword = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Get all staff/admin members
+// @route   GET /api/auth/staff
+// @access  Private/Admin
+exports.getAllStaff = async (req, res) => {
+    try {
+        const staff = await User.find({ role: { $in: ['Staff', 'Admin'] } })
+            .select('-password')
+            .sort({ createdAt: -1 });
+        res.json(staff);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Delete a user
+// @route   DELETE /api/auth/users/:id
+// @access  Private/Admin
+exports.deleteUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Prevent deleting the last admin if needed (optional safety)
+        if (user.role === 'Admin' && req.user._id.toString() === user._id.toString()) {
+            return res.status(400).json({ message: 'Cannot delete yourself' });
+        }
+
+        await user.deleteOne();
+        res.json({ message: 'User removed successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

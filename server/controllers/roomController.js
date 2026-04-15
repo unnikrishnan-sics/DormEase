@@ -30,7 +30,10 @@ exports.addRoom = async (req, res) => {
             totalCapacity,
             pricePerMonth,
             facilities,
-            floor
+            floor,
+            price6Months: req.body.price6Months,
+            price12Months: req.body.price12Months,
+            price24Months: req.body.price24Months
         });
 
         res.status(201).json(room);
@@ -53,6 +56,9 @@ exports.updateRoom = async (req, res) => {
             room.facilities = req.body.facilities || room.facilities;
             room.floor = req.body.floor || room.floor;
             room.status = req.body.status || room.status;
+            room.price6Months = req.body.price6Months ?? room.price6Months;
+            room.price12Months = req.body.price12Months ?? room.price12Months;
+            room.price24Months = req.body.price24Months ?? room.price24Months;
 
             const updatedRoom = await room.save();
             res.json(updatedRoom);
