@@ -41,7 +41,8 @@ const Payments: React.FC = () => {
     amount: '',
     paymentMethod: 'Cash',
     paymentDate: new Date().toISOString().split('T')[0],
-    description: ''
+    description: '',
+    packageType: 'Monthly'
   });
 
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
@@ -101,7 +102,7 @@ const Payments: React.FC = () => {
       setSnackbar({ open: true, message: 'Payment recorded successfully', severity: 'success' });
       setOpen(false);
       fetchData();
-      setFormData({ userId: '', amount: '', paymentMethod: 'Cash', paymentDate: new Date().toISOString().split('T')[0], description: '' });
+      setFormData({ userId: '', amount: '', paymentMethod: 'Cash', paymentDate: new Date().toISOString().split('T')[0], description: '', packageType: 'Monthly' });
     } catch (err) {
       setSnackbar({ open: true, message: 'Failed to record payment', severity: 'error' });
     } finally {
@@ -449,6 +450,20 @@ const Payments: React.FC = () => {
                 <MenuItem value="Cash">Cash</MenuItem>
                 <MenuItem value="UPI">UPI / Digital Wallet</MenuItem>
                 <MenuItem value="Bank Transfer">Bank Transfer</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid xs={12} sm={6}>
+              <TextField
+                select
+                fullWidth
+                label="Package Plan"
+                value={formData.packageType}
+                onChange={(e) => setFormData({ ...formData, packageType: e.target.value })}
+              >
+                <MenuItem value="Monthly">Monthly</MenuItem>
+                <MenuItem value="6 Months">6 Months</MenuItem>
+                <MenuItem value="12 Months">12 Months</MenuItem>
+                <MenuItem value="24 Months">24 Months</MenuItem>
               </TextField>
             </Grid>
             <Grid xs={12}>

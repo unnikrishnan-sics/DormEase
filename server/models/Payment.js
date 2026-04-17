@@ -29,7 +29,12 @@ const PaymentSchema = new mongoose.Schema({
         default: 'Pending'
     },
     stripeSessionId: String,
-    invoiceUrl: String
+    invoiceUrl: String,
+    packageType: {
+        type: String,
+        enum: ['Monthly', '6 Months', '12 Months', '24 Months'],
+        default: 'Monthly'
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Payment', PaymentSchema);

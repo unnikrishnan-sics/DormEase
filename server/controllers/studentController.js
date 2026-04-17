@@ -75,8 +75,8 @@ exports.addStudent = async (req, res) => {
             permanentAddress,
             currentRoomId,
             packageType: packageType || 'Monthly',
-            subscriptionEndDate: currentRoomId ? endDate : null,
-            bookingStatus: currentRoomId ? 'Allocated' : 'Pending'
+            subscriptionEndDate: null, // Set ONLY after payment
+            bookingStatus: 'Pending' // Keep Waitlisted/Pending until payment
         });
 
         // 4.5. Update Room Occupancy
@@ -97,7 +97,8 @@ exports.addStudent = async (req, res) => {
                 userId: user._id,
                 amount: finalAmount,
                 paymentStatus: 'Pending',
-                paymentMethod: 'Card' 
+                paymentMethod: 'Card',
+                packageType: packageType || 'Monthly'
             });
         }
 

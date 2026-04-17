@@ -1,6 +1,61 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Payment = require('../models/Payment');
 const Booking = require('../models/Booking');
+const Student = require('../models/Student');
+
+// Helper to handle all post-payment core logic
+const fulfillPayment = async (paymentIdOrObj) => {
+    let payment;
+    if (typeof paymentIdOrObj === 'string' || paymentIdOrObj instanceof require('mongoose').Types.ObjectId) {
+        payment = await Payment.findById(paymentIdOrObj);
+    } else {
+        payment = paymentIdOrObj;
+    }
+
+    if (!payment || payment.paymentStatus === 'Paid') return;
+
+    payment.paymentStatus = 'Paid';
+    payment.paymentDate = payment.paymentDate || Date.now();
+    await payment.save();
+
+    // 1. Update Student Profile
+    const student = await Student.findOne({ userId: payment.userId });
+    if (student) {
+        // Update status to Allocated if they have a room
+        if (student.currentRoomId) {
+            student.bookingStatus = 'Allocated';
+        }
+
+        // Extend or Set Subscription End Date
+        const packageType = payment.packageType || student.packageType || 'Monthly';
+        let monthsToAdd = 1;
+        if (packageType === '6 Months') monthsToAdd = 6;
+        else if (packageType === '12 Months') monthsToAdd = 12;
+        else if (packageType === '24 Months') monthsToAdd = 24;
+
+        // If current subscription is still active, extend from end date. Otherwise start from today.
+        const currentEndDate = student.subscriptionEndDate && student.subscriptionEndDate > new Date() 
+            ? student.subscriptionEndDate 
+            : new Date();
+        
+        const newEndDate = new Date(currentEndDate);
+        newEndDate.setMonth(newEndDate.getMonth() + monthsToAdd);
+        
+        student.subscriptionEndDate = newEndDate;
+        await student.save();
+    }
+
+    // 2. Update Booking if any
+    if (payment.bookingId) {
+        const booking = await Booking.findById(payment.bookingId);
+        if (booking) {
+            booking.status = 'Confirmed';
+            await booking.save();
+        }
+    }
+    
+    return payment;
+};
 
 // @desc    Create Stripe Checkout Session
 // @route   POST /api/payments/create-session
@@ -14,8 +69,18 @@ exports.createCheckoutSession = async (req, res) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
+        // 1. Create local payment record first to get ID
+        const payment = await Payment.create({
+            bookingId,
+            userId: req.user._id,
+            amount,
+            paymentStatus: 'Pending',
+            packageType: 'Monthly' // Defaults to Monthly for room rent usually
+        });
+
         const clientUrl = process.env.CLIENT_URL || req.headers.origin || 'http://localhost:5173';
         
+        // 2. Create Stripe session with local paymentId in metadata
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [
@@ -31,22 +96,18 @@ exports.createCheckoutSession = async (req, res) => {
                 },
             ],
             mode: 'payment',
-            success_url: `${clientUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${clientUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}&payment_id=${payment._id}`,
             cancel_url: `${clientUrl}/payment-cancelled`,
             metadata: {
+                paymentId: payment._id.toString(),
                 bookingId: bookingId,
                 userId: req.user._id.toString()
             }
         });
 
-        // Record pending payment
-        await Payment.create({
-            bookingId,
-            userId: req.user._id,
-            amount,
-            paymentStatus: 'Pending',
-            stripeSessionId: session.id
-        });
+        // 3. Update payment with session identity
+        payment.stripeSessionId = session.id;
+        await payment.save();
 
         res.json({ id: session.id, url: session.url });
     } catch (error) {
@@ -67,20 +128,13 @@ exports.handleStripeWebhook = async (req, res) => {
         
         // 1. Update by specific Payment ID if provided (preferred)
         if (paymentId) {
-            const payment = await Payment.findById(paymentId);
-            if (payment) {
-                payment.paymentStatus = 'Paid';
-                payment.paymentDate = Date.now();
-                await payment.save();
-            }
+            await fulfillPayment(paymentId);
         } 
         // 2. Fallback to Booking lookup
         else if (bookingId) {
             const payment = await Payment.findOne({ bookingId, paymentStatus: 'Pending' });
             if (payment) {
-                payment.paymentStatus = 'Paid';
-                payment.paymentDate = Date.now();
-                await payment.save();
+                await fulfillPayment(payment);
             }
         }
     }
@@ -116,16 +170,19 @@ exports.getPayments = async (req, res) => {
 // @access  Private/Admin
 exports.recordManualPayment = async (req, res) => {
     try {
-        const { userId, amount, paymentMethod, paymentDate, bookingId } = req.body;
+        const { userId, amount, paymentMethod, paymentDate, bookingId, packageType } = req.body;
 
         const payment = await Payment.create({
             userId,
             amount,
             paymentMethod,
             paymentDate: paymentDate || Date.now(),
-            paymentStatus: 'Paid',
-            bookingId
+            paymentStatus: 'Pending', // Set to Paid via fulfillPayment
+            bookingId,
+            packageType: packageType || 'Monthly'
         });
+
+        await fulfillPayment(payment);
 
         res.status(201).json(payment);
     } catch (error) {
@@ -221,6 +278,34 @@ exports.payInvoice = async (req, res) => {
     } catch (error) {
         console.error("Stripe Error:", error);
         res.status(500).json({ message: error.message || 'Stripe error', details: error.type });
+    }
+};
+
+// @desc    Verify Stripe Session status and fulfill payment (Webhook Failsafe)
+// @route   GET /api/payments/verify/:sessionId
+// @access  Private
+exports.verifyPaymentSession = async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+        if (session.payment_status === 'paid') {
+            const { paymentId, bookingId } = session.metadata;
+            
+            // Fulfill payment using metadata
+            if (paymentId) {
+                await fulfillPayment(paymentId);
+            } else if (bookingId) {
+                const payment = await Payment.findOne({ bookingId, stripeSessionId: sessionId });
+                if (payment) await fulfillPayment(payment);
+            }
+
+            res.json({ status: 'Paid', success: true });
+        } else {
+            res.json({ status: session.payment_status, success: false });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 // @desc    Get upcoming expiring subscriptions (3-day window)
