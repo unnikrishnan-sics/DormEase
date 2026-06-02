@@ -336,37 +336,42 @@ const Login: React.FC = () => {
         onClose={handleCloseForgot} 
         maxWidth="xs" 
         fullWidth
-        PaperProps={{
-          sx: {
-            background: 'rgba(15, 23, 42, 0.95)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: 6,
-            color: 'white',
-            p: 3,
-            boxShadow: '0 40px 100px rgba(0,0,0,0.6)'
+        sx={{
+          '& .MuiPaper-root': {
+            background: '#0F172A !important',
+            backgroundImage: 'none !important',
+            border: '1px solid rgba(255, 255, 255, 0.1) !important',
+            borderRadius: '24px !important',
+            color: 'white !important',
+            p: 4,
+            boxShadow: '0 40px 100px rgba(0,0,0,0.8) !important'
+          },
+          '& .MuiBackdrop-root': {
+            backdropFilter: 'blur(12px) !important',
+            backgroundColor: 'rgba(0, 0, 0, 0.75) !important'
           }
         }}
       >
-        <DialogTitle sx={{ fontWeight: 800, textAlign: 'center', pb: 1, px: 0 }}>
+        <DialogTitle sx={{ fontWeight: 900, textAlign: 'center', pb: 1.5, px: 0, color: 'white !important', fontSize: '1.75rem', letterSpacing: '-0.5px' }}>
           {forgotStep === 1 ? 'Forgot Password' : 'Reset Password'}
         </DialogTitle>
-        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', mb: 3, px: 2 }}>
+        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5) !important', textAlign: 'center', mb: 4, px: 1, lineHeight: 1.5 }}>
           {forgotStep === 1 
             ? 'Enter your registered email address to receive a 6-digit verification code.'
             : `Verify the OTP sent to your email and set your new password.`}
         </Typography>
 
-        <DialogContent sx={{ p: 0, overflow: 'visible' }}>
+        <DialogContent sx={{ p: 0, overflow: 'visible', bgcolor: 'transparent !important' }}>
           {forgotError && (
             <Alert 
               severity="error" 
               sx={{ 
-                mb: 3, 
+                mb: 3.5, 
                 borderRadius: 3, 
-                bgcolor: 'rgba(211, 47, 47, 0.1)', 
-                color: '#ffcdd2',
-                '& .MuiAlert-icon': { color: '#ef5350' }
+                bgcolor: 'rgba(239, 68, 68, 0.1) !important', 
+                color: '#fca5a5 !important',
+                border: '1px solid rgba(239, 68, 68, 0.2) !important',
+                '& .MuiAlert-icon': { color: '#f87171 !important' }
               }}
             >
               {forgotError}
@@ -383,22 +388,29 @@ const Login: React.FC = () => {
                 onChange={(e) => setForgotEmail(e.target.value)}
                 InputProps={{
                   startAdornment: (
-                    <InputAdornment position="start" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <InputAdornment position="start" sx={{ color: 'rgba(255,255,255,0.5) !important' }}>
                       <EmailOutlined />
                     </InputAdornment>
                   ),
                 }}
                 sx={{ 
-                  mb: 3,
+                  mb: 3.5,
+                  '& .MuiInputLabel-root': { 
+                    color: 'rgba(255, 255, 255, 0.5) !important',
+                    '&.Mui-focused': { color: 'var(--secondary) !important' }
+                  },
                   '& .MuiOutlinedInput-root': { 
                     borderRadius: 3,
-                    bgcolor: 'rgba(255,255,255,0.03)',
-                    color: 'white',
-                    '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                    '&:hover fieldset': { borderColor: 'var(--secondary)' },
-                    '&.Mui-focused fieldset': { borderColor: 'var(--secondary)' }
+                    bgcolor: 'rgba(255,255,255,0.03) !important',
+                    color: 'white !important',
+                    '& fieldset': { borderColor: 'rgba(255,255,255,0.1) !important' },
+                    '&:hover fieldset': { borderColor: 'var(--secondary) !important' },
+                    '&.Mui-focused fieldset': { borderColor: 'var(--secondary) !important' }
                   },
-                  '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' }
+                  '& .MuiOutlinedInput-input': { 
+                    color: 'white !important',
+                    '-webkit-text-fill-color': 'white !important'
+                  }
                 }}
               />
               <Button
@@ -407,13 +419,15 @@ const Login: React.FC = () => {
                 variant="contained"
                 disabled={forgotLoading}
                 sx={{ 
-                  height: 50, 
+                  height: 54, 
                   borderRadius: 3,
                   fontWeight: 800,
                   textTransform: 'none',
-                  bgcolor: 'var(--primary)',
-                  boxShadow: '0 20px 40px rgba(43, 90, 129, 0.3)',
-                  '&:hover': { bgcolor: '#1e4a6d' }
+                  fontSize: '0.95rem',
+                  bgcolor: 'var(--primary) !important',
+                  color: 'white !important',
+                  boxShadow: '0 20px 40px rgba(43, 90, 129, 0.3) !important',
+                  '&:hover': { bgcolor: '#1e4a6d !important' }
                 }}
               >
                 {forgotLoading ? <CircularProgress size={24} color="inherit" /> : 'Send Reset OTP'}
@@ -429,22 +443,29 @@ const Login: React.FC = () => {
                 onChange={(e) => setForgotOtp(e.target.value)}
                 InputProps={{
                   startAdornment: (
-                    <InputAdornment position="start" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <InputAdornment position="start" sx={{ color: 'rgba(255,255,255,0.5) !important' }}>
                       <DialpadOutlined />
                     </InputAdornment>
                   ),
                 }}
                 sx={{ 
                   mb: 2.5,
+                  '& .MuiInputLabel-root': { 
+                    color: 'rgba(255, 255, 255, 0.5) !important',
+                    '&.Mui-focused': { color: 'var(--secondary) !important' }
+                  },
                   '& .MuiOutlinedInput-root': { 
                     borderRadius: 3,
-                    bgcolor: 'rgba(255,255,255,0.03)',
-                    color: 'white',
-                    '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                    '&:hover fieldset': { borderColor: 'var(--secondary)' },
-                    '&.Mui-focused fieldset': { borderColor: 'var(--secondary)' }
+                    bgcolor: 'rgba(255,255,255,0.03) !important',
+                    color: 'white !important',
+                    '& fieldset': { borderColor: 'rgba(255,255,255,0.1) !important' },
+                    '&:hover fieldset': { borderColor: 'var(--secondary) !important' },
+                    '&.Mui-focused fieldset': { borderColor: 'var(--secondary) !important' }
                   },
-                  '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' }
+                  '& .MuiOutlinedInput-input': { 
+                    color: 'white !important',
+                    '-webkit-text-fill-color': 'white !important'
+                  }
                 }}
               />
               <TextField
@@ -456,7 +477,7 @@ const Login: React.FC = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
                 InputProps={{
                   startAdornment: (
-                    <InputAdornment position="start" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <InputAdornment position="start" sx={{ color: 'rgba(255,255,255,0.5) !important' }}>
                       <LockOutlined />
                     </InputAdornment>
                   ),
@@ -465,7 +486,7 @@ const Login: React.FC = () => {
                       <IconButton
                         onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
                         edge="end"
-                        sx={{ color: 'rgba(255,255,255,0.5)' }}
+                        sx={{ color: 'rgba(255,255,255,0.5) !important' }}
                       >
                         {showForgotNewPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -474,15 +495,22 @@ const Login: React.FC = () => {
                 }}
                 sx={{ 
                   mb: 2.5,
+                  '& .MuiInputLabel-root': { 
+                    color: 'rgba(255, 255, 255, 0.5) !important',
+                    '&.Mui-focused': { color: 'var(--secondary) !important' }
+                  },
                   '& .MuiOutlinedInput-root': { 
                     borderRadius: 3,
-                    bgcolor: 'rgba(255,255,255,0.03)',
-                    color: 'white',
-                    '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                    '&:hover fieldset': { borderColor: 'var(--secondary)' },
-                    '&.Mui-focused fieldset': { borderColor: 'var(--secondary)' }
+                    bgcolor: 'rgba(255,255,255,0.03) !important',
+                    color: 'white !important',
+                    '& fieldset': { borderColor: 'rgba(255,255,255,0.1) !important' },
+                    '&:hover fieldset': { borderColor: 'var(--secondary) !important' },
+                    '&.Mui-focused fieldset': { borderColor: 'var(--secondary) !important' }
                   },
-                  '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' }
+                  '& .MuiOutlinedInput-input': { 
+                    color: 'white !important',
+                    '-webkit-text-fill-color': 'white !important'
+                  }
                 }}
               />
               <TextField
@@ -494,7 +522,7 @@ const Login: React.FC = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 InputProps={{
                   startAdornment: (
-                    <InputAdornment position="start" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <InputAdornment position="start" sx={{ color: 'rgba(255,255,255,0.5) !important' }}>
                       <LockOutlined />
                     </InputAdornment>
                   ),
@@ -503,7 +531,7 @@ const Login: React.FC = () => {
                       <IconButton
                         onClick={() => setShowForgotConfirmPassword(!showForgotConfirmPassword)}
                         edge="end"
-                        sx={{ color: 'rgba(255,255,255,0.5)' }}
+                        sx={{ color: 'rgba(255,255,255,0.5) !important' }}
                       >
                         {showForgotConfirmPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -511,16 +539,23 @@ const Login: React.FC = () => {
                   ),
                 }}
                 sx={{ 
-                  mb: 3.5,
+                  mb: 4,
+                  '& .MuiInputLabel-root': { 
+                    color: 'rgba(255, 255, 255, 0.5) !important',
+                    '&.Mui-focused': { color: 'var(--secondary) !important' }
+                  },
                   '& .MuiOutlinedInput-root': { 
                     borderRadius: 3,
-                    bgcolor: 'rgba(255,255,255,0.03)',
-                    color: 'white',
-                    '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                    '&:hover fieldset': { borderColor: 'var(--secondary)' },
-                    '&.Mui-focused fieldset': { borderColor: 'var(--secondary)' }
+                    bgcolor: 'rgba(255,255,255,0.03) !important',
+                    color: 'white !important',
+                    '& fieldset': { borderColor: 'rgba(255,255,255,0.1) !important' },
+                    '&:hover fieldset': { borderColor: 'var(--secondary) !important' },
+                    '&.Mui-focused fieldset': { borderColor: 'var(--secondary) !important' }
                   },
-                  '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' }
+                  '& .MuiOutlinedInput-input': { 
+                    color: 'white !important',
+                    '-webkit-text-fill-color': 'white !important'
+                  }
                 }}
               />
               <Button
@@ -529,14 +564,15 @@ const Login: React.FC = () => {
                 variant="contained"
                 disabled={forgotLoading}
                 sx={{ 
-                  height: 50, 
+                  height: 54, 
                   borderRadius: 3,
                   fontWeight: 800,
                   textTransform: 'none',
-                  bgcolor: 'var(--secondary)',
-                  color: 'white',
-                  boxShadow: '0 20px 40px rgba(82, 168, 158, 0.3)',
-                  '&:hover': { bgcolor: '#3d7e77' }
+                  fontSize: '0.95rem',
+                  bgcolor: 'var(--secondary) !important',
+                  color: 'white !important',
+                  boxShadow: '0 20px 40px rgba(82, 168, 158, 0.3) !important',
+                  '&:hover': { bgcolor: '#3d7e77 !important' }
                 }}
               >
                 {forgotLoading ? <CircularProgress size={24} color="inherit" /> : 'Reset Password'}
@@ -545,14 +581,14 @@ const Login: React.FC = () => {
           )}
         </DialogContent>
 
-        <DialogActions sx={{ justifyContent: 'center', mt: 2, p: 0 }}>
+        <DialogActions sx={{ justifyContent: 'center', mt: 3, p: 0 }}>
           <Button 
             onClick={handleCloseForgot}
             sx={{ 
               fontWeight: 700, 
-              color: 'rgba(255,255,255,0.5)', 
+              color: 'rgba(255,255,255,0.5) !important', 
               textTransform: 'none',
-              '&:hover': { color: 'white', bgcolor: 'transparent' }
+              '&:hover': { color: 'white !important', bgcolor: 'transparent !important' }
             }}
           >
             Cancel
