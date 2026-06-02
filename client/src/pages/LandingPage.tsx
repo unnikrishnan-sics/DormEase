@@ -68,7 +68,15 @@ const StudentHeroMockup = () => {
             <Typography variant="body2" color="text.secondary">
               Fully furnished with high-speed WiFi, dedicated study space, and ensuite bathroom.
             </Typography>
-            <Button variant="contained" fullWidth sx={{ mt: 1, bgcolor: 'var(--primary)', borderRadius: 2 }}>
+            <Button 
+              variant="contained" 
+              fullWidth 
+              onClick={() => {
+                const el = document.getElementById('contact');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              sx={{ mt: 1, bgcolor: 'var(--primary)', borderRadius: 2 }}
+            >
               Book Your View
             </Button>
           </Stack>

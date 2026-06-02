@@ -294,10 +294,13 @@ const StudentDashboard: React.FC = () => {
                   <AutoAwesome fontSize="small" />
                 </Box>
                 <Box>
-                  <Typography variant="subtitle2" color="primary.main" fontWeight="800">SMART RESIDENCE INSIGHT</Typography>
-                  <Typography variant="body2" color="text.primary" fontWeight="500">
-                    Welcome to **Room {data.room.roomNumber}**. You have **{data.roommates.length}** awesome roommate(s). 
-                    Your room is a **{data.room.roomType}** - make sure to check the room guidelines soon!
+                  <Typography variant="subtitle2" color="primary.main" fontWeight="900" sx={{ letterSpacing: 0.5 }}>
+                    SMART RESIDENCE INSIGHT
+                  </Typography>
+                  <Typography variant="body2" color="text.primary" fontWeight="500" sx={{ mt: 0.5, lineHeight: 1.5 }}>
+                    Welcome to <Box component="span" sx={{ fontWeight: 800, color: 'primary.main' }}>Room {data.room.roomNumber}</Box>. 
+                    You have <Box component="span" sx={{ fontWeight: 800, color: 'primary.main' }}>{data.roommates.length}</Box> awesome roommate(s). 
+                    Your room is a <Box component="span" sx={{ fontWeight: 800, color: 'primary.main' }}>{data.room.roomType}</Box>—make sure to check the room guidelines soon!
                   </Typography>
                 </Box>
               </Paper>
