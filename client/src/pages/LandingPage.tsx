@@ -111,7 +111,7 @@ const LandingPage = () => {
   ];
 
   return (
-    <Box sx={{ bgcolor: '#0F172A', color: 'white', minHeight: '100vh', overflowX: 'hidden' }}>
+    <Box id="home" sx={{ bgcolor: '#0F172A', color: 'white', minHeight: '100vh', overflowX: 'hidden' }}>
       <PublicNavbar />
       
       {/* Hero Section */}
@@ -164,7 +164,7 @@ const LandingPage = () => {
                 variant="outlined" 
                 size="large" 
                 onClick={() => {
-                    const el = document.getElementById('amenities');
+                    const el = document.getElementById('features');
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
                 sx={{ 
@@ -247,7 +247,7 @@ const LandingPage = () => {
       </Box>
 
       {/* Premium Bento Grid - Amenities */}
-      <Container maxWidth="lg" sx={{ py: 15 }} id="amenities">
+      <Container maxWidth="lg" sx={{ py: 15 }} id="features">
         <Box sx={{ textAlign: 'center', mb: 10 }}>
           <motion.div {...fadeInUp}>
             <Typography variant="h2" sx={{ fontWeight: 900, mb: 3 }}>Amenities designed<br />for <span style={{ color: 'var(--secondary)' }}>your comfort.</span></Typography>
