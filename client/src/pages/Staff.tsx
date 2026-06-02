@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import { 
   Search, Add, Delete, Mail, Phone, Security, AdminPanelSettings, 
-  Badge, Work, ContactPhone, PersonAdd
+  Badge, Work, ContactPhone, PersonAdd, Visibility, VisibilityOff
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
@@ -31,6 +31,7 @@ const Staff: React.FC = () => {
     phone: '',
     address: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   // Delete Dialog States
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -258,8 +259,17 @@ const Staff: React.FC = () => {
             </Grid>
             <Grid xs={12}>
               <TextField 
-                fullWidth label="Initial Password" type="password"
+                fullWidth label="Initial Password" type={showPassword ? 'text' : 'password'}
                 value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} 
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Grid>
             <Grid xs={12} sm={6}>

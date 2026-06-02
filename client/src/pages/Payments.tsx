@@ -110,6 +110,19 @@ const Payments: React.FC = () => {
     }
   };
 
+  const handleVerifyPayment = async (paymentId: string) => {
+    try {
+      setLoading(true);
+      await api.put(`/payments/${paymentId}/verify`);
+      setSnackbar({ open: true, message: 'Payment verified and subscription activated!', severity: 'success' });
+      fetchData();
+    } catch (err: any) {
+      setSnackbar({ open: true, message: err.response?.data?.message || 'Verification failed', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSendReminders = async () => {
     try {
       setReminding(true);
@@ -176,7 +189,7 @@ const Payments: React.FC = () => {
             { label: 'Pending Dues', val: stats.pendingPayments, icon: <PendingActions />, color: '#F59E0B', bg: '#FEF3C7' },
             { label: 'Recent (30d)', val: `$${stats.recentRevenue.toLocaleString()}`, icon: <AccountBalanceWallet />, color: '#3B82F6', bg: '#DBEAFE' },
           ].map((stat, i) => (
-            <Grid xs={12} md={4} key={i}>
+            <Grid item xs={12} md={4} key={i}>
               <Card sx={{ borderRadius: 4, boxShadow: '0 4px 20px 0 rgba(0,0,0,0.05)' }}>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', p: 3 }}>
                   <Box sx={{ p: 2, borderRadius: '50%', bgcolor: stat.bg, color: stat.color, mr: 2, display: 'flex' }}>
@@ -225,14 +238,12 @@ const Payments: React.FC = () => {
             placeholder="Search transactions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search fontSize="small" />
-                  </InputAdornment>
-                ),
-              }
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search fontSize="small" />
+                </InputAdornment>
+              ),
             }}
             sx={{ width: 250 }}
           />
@@ -315,7 +326,18 @@ const Payments: React.FC = () => {
                         />
                       </TableCell>
                       <TableCell align="right">
-                        {!isAdmin && p.paymentStatus === 'Pending' ? (
+                        {isAdmin && p.paymentStatus === 'Pending' && (p.paymentMethod !== 'Card') ? (
+                          <Button 
+                            size="small" 
+                            variant="contained" 
+                            color="success"
+                            startIcon={<Paid />}
+                            onClick={() => handleVerifyPayment(p._id)}
+                            sx={{ borderRadius: 2, mr: 1 }}
+                          >
+                            Verify Payment
+                          </Button>
+                        ) : !isAdmin && p.paymentStatus === 'Pending' && p.paymentMethod === 'Card' ? (
                           <Button 
                             size="small" 
                             variant="contained" 
@@ -325,9 +347,18 @@ const Payments: React.FC = () => {
                           >
                             Pay Now
                           </Button>
+                        ) : !isAdmin && p.paymentStatus === 'Pending' ? (
+                          <Chip 
+                            label="Pay Cash in Office" 
+                            size="small" 
+                            color="info" 
+                            variant="outlined"
+                            sx={{ fontWeight: 'bold', borderRadius: 1.5 }}
+                          />
                         ) : (
                           <IconButton size="small" onClick={() => handleOpenInvoice(p)}><Receipt fontSize="small" /></IconButton>
                         )}
+                        {isAdmin && <IconButton size="small" onClick={() => handleOpenInvoice(p)}><Receipt fontSize="small" /></IconButton>}
                       </TableCell>
                     </TableRow>
                   );
@@ -358,13 +389,13 @@ const Payments: React.FC = () => {
 
             {/* Bill To / Info */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid xs={6}>
+              <Grid item xs={6}>
                 <Typography variant="caption" color="textSecondary" fontWeight="bold" display="block" sx={{ mb: 1 }}>BILL TO</Typography>
                 <Typography variant="body1" fontWeight="bold">{selectedInvoice?.userId?.name}</Typography>
                 <Typography variant="body2" color="textSecondary">{selectedInvoice?.userId?.email}</Typography>
                 <Typography variant="body2" color="textSecondary">{selectedInvoice?.student?.userId?.contactDetails?.phone}</Typography>
               </Grid>
-              <Grid xs={6} sx={{ textAlign: 'right' }}>
+              <Grid item xs={6} sx={{ textAlign: 'right' }}>
                 <Typography variant="caption" color="textSecondary" fontWeight="bold" display="block" sx={{ mb: 1 }}>STATUS</Typography>
                 <Chip 
                   label={selectedInvoice?.paymentStatus?.toUpperCase()} 
@@ -414,7 +445,7 @@ const Payments: React.FC = () => {
         <DialogTitle sx={{ fontWeight: 'bold' }}>Record Offline Payment</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={3} sx={{ py: 1 }}>
-            <Grid xs={12}>
+            <Grid item xs={12}>
               <TextField
                 select
                 fullWidth
@@ -429,17 +460,17 @@ const Payments: React.FC = () => {
                 ))}
               </TextField>
             </Grid>
-            <Grid xs={12} sm={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Amount Paid ($)"
                 type="number"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                slotProps={{ input: { startAdornment: <InputAdornment position="start">$</InputAdornment> } }}
+                InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
               />
             </Grid>
-            <Grid xs={12} sm={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 select
                 fullWidth
@@ -452,7 +483,7 @@ const Payments: React.FC = () => {
                 <MenuItem value="Bank Transfer">Bank Transfer</MenuItem>
               </TextField>
             </Grid>
-            <Grid xs={12} sm={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 select
                 fullWidth
@@ -466,7 +497,7 @@ const Payments: React.FC = () => {
                 <MenuItem value="24 Months">24 Months</MenuItem>
               </TextField>
             </Grid>
-            <Grid xs={12}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Payment Date"

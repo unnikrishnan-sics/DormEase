@@ -8,19 +8,35 @@ const MessMenuSchema = new mongoose.Schema({
         unique: true
     },
     breakfast: {
-        items: [String],
+        items: [{
+            name: String,
+            allergens: [String],
+            type: { type: String, enum: ['Veg', 'Non-Veg', 'Egg'], default: 'Veg' }
+        }],
         time: String
     },
     lunch: {
-        items: [String],
+        items: [{
+            name: String,
+            allergens: [String],
+            type: { type: String, enum: ['Veg', 'Non-Veg', 'Egg'], default: 'Veg' }
+        }],
         time: String
     },
     snacks: {
-        items: [String],
+        items: [{
+            name: String,
+            allergens: [String],
+            type: { type: String, enum: ['Veg', 'Non-Veg', 'Egg'], default: 'Veg' }
+        }],
         time: String
     },
     dinner: {
-        items: [String],
+        items: [{
+            name: String,
+            allergens: [String],
+            type: { type: String, enum: ['Veg', 'Non-Veg', 'Egg'], default: 'Veg' }
+        }],
         time: String
     },
     specialNote: String

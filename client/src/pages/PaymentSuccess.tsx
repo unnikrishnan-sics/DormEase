@@ -19,7 +19,11 @@ const PaymentSuccess: React.FC = () => {
       
       try {
         setVerifying(true);
-        const res = await api.get(`/payments/verify/${sessionId}`);
+        // Use fine verification if fine_id is present in URL
+        const isFine = searchParams.get('fine_id');
+        const endpoint = isFine ? `/fines/verify/${sessionId}` : `/payments/verify/${sessionId}`;
+        
+        const res = await api.get(endpoint);
         if (res.data.success) {
           setStatus('success');
         } else {

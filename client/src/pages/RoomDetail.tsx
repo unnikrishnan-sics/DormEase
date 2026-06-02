@@ -80,7 +80,7 @@ const RoomDetail: React.FC = () => {
       </Button>
 
       <Grid container spacing={4}>
-        <Grid xs={12} md={7}>
+        <Grid item xs={12} md={7}>
           <Paper sx={{ p: 4, borderRadius: 4, height: '100%', boxShadow: '0 4px 20px 0 rgba(0,0,0,0.05)' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
               <Box>
@@ -97,7 +97,7 @@ const RoomDetail: React.FC = () => {
             </Typography>
             <Grid container spacing={2}>
               {room.facilities?.map((f: string, i: number) => (
-                <Grid xs={6} sm={4} key={i}>
+                <Grid item xs={6} sm={4} key={i}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, borderRadius: 2, bgcolor: '#F1F5F9', border: '1px solid #E2E8F0' }}>
                     {getAmenityIcon(f)}
                     <Typography variant="body2" fontWeight="800" color="text.primary">{f}</Typography>
@@ -111,13 +111,13 @@ const RoomDetail: React.FC = () => {
 
             <Box sx={{ mt: 4, p: 3, borderRadius: 3, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Room Rules</Typography>
-              <List size="small">
+              <List>
                 {['No loud music after 10 PM', 'Keep the room clean and hygienic', 'No guests allowed overnight'].map((rule, i) => (
                   <ListItem key={i} sx={{ px: 0, py: 0.5 }}>
                     <ListItemIcon sx={{ minWidth: 30, color: 'inherit' }}>
                       <CheckCircle fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText primary={rule} primaryTypographyProps={{ variant: 'body2' }} />
+                    <ListItemText primary={<Typography variant="body2">{rule}</Typography>} />
                   </ListItem>
                 ))}
               </List>
@@ -125,7 +125,7 @@ const RoomDetail: React.FC = () => {
           </Paper>
         </Grid>
 
-        <Grid xs={12} md={5}>
+        <Grid item xs={12} md={5}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Card sx={{ borderRadius: 4, boxShadow: '0 4px 20px 0 rgba(0,0,0,0.05)' }}>
               <CardContent sx={{ p: 3 }}>
@@ -138,7 +138,7 @@ const RoomDetail: React.FC = () => {
                       <Avatar sx={{ mr: 2, bgcolor: i % 2 === 0 ? 'secondary.main' : 'info.main', width: 32, height: 32, fontSize: '0.875rem' }}>
                         {name[0]}
                       </Avatar>
-                      <ListItemText primary={name} primaryTypographyProps={{ fontWeight: 600 }} />
+                      <ListItemText primary={<Typography fontWeight={600}>{name}</Typography>} />
                       <Chip label="Allocated" size="small" variant="outlined" />
                     </ListItem>
                   ))}

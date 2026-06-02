@@ -228,7 +228,7 @@ const StudentDashboard: React.FC = () => {
                   }}
                   startIcon={<Receipt />}
                 >
-                  {data?.financials?.pendingAmount > 0 ? 'Pay Now' : 'View History'}
+                  {data?.financials?.pendingAmount > 0 ? 'Manage Payments' : 'View History'}
                 </Button>
               </Box>
             </CardContent>

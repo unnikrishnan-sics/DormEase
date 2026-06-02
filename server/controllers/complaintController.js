@@ -1,7 +1,4 @@
 const Complaint = require('../models/Complaint');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // @desc    Submit a new complaint
 // @route   POST /api/complaints
@@ -17,24 +14,6 @@ exports.submitComplaint = async (req, res) => {
             description,
             priority
         });
-
-        // AI Analysis using Gemini
-        try {
-            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-            const prompt = `Analyze this hostel complaint: "${description}". Provide a JSON response with the following fields: "sentiment" (String: Positive/Neutral/Negative), "summary" (String: Short summary of the issue), and "suggestedResponse" (String: A helpful response for the admin to send to the student).`;
-            
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
-            
-            // Basic extraction (Assuming JSON-like response from AI)
-            // In production, use robust parsing
-            const aiData = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
-            complaint.aiAnalysis = aiData;
-        } catch (aiError) {
-            console.error('AI Analysis failed:', aiError);
-            // Non-critical error, continue without AI data
-        }
 
         await complaint.save();
         res.status(201).json(complaint);

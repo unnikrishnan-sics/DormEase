@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Paper, Typography, TextField, Button, Link as MuiLink, Container, Alert, CircularProgress, IconButton } from '@mui/material';
+import { Box, Paper, Typography, TextField, Button, Link as MuiLink, Container, Alert, CircularProgress, IconButton, InputAdornment } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft } from '@mui/icons-material';
+import { ChevronLeft, Visibility, VisibilityOff } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -148,11 +149,25 @@ const Login: React.FC = () => {
                 fullWidth
                 name="password"
                 label="Password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="password"
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        sx={{ color: 'rgba(255,255,255,0.5)' }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
                 sx={{ 
                   '& .MuiOutlinedInput-root': { 
                     borderRadius: 3,

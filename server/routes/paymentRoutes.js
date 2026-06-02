@@ -9,11 +9,13 @@ const {
   payInvoice,
   getExpiringSubscriptions,
   sendReminders,
-  verifyPaymentSession
+  verifyPaymentSession,
+  verifyPayment
 } = require('../controllers/paymentController');
 const { protect, authorize } = require('../middleware/auth');
 
 router.get('/', protect, getPayments);
+router.put('/:id/verify', protect, authorize('Admin'), verifyPayment);
 router.get('/stats', protect, authorize('Admin'), getFinanceStats);
 router.get('/expiring', protect, authorize('Admin'), getExpiringSubscriptions);
 router.post('/remind-expiring', protect, authorize('Admin'), sendReminders);

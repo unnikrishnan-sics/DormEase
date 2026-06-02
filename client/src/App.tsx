@@ -14,11 +14,19 @@ import ChangePassword from './pages/ChangePassword';
 import Profile from './pages/Profile';
 import RoomDetail from './pages/RoomDetail';
 import LandingPage from './pages/LandingPage';
+import Maintenance from './pages/Maintenance';
 import NotFound from './pages/NotFound';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancelled from './pages/PaymentCancelled';
-import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import AttendanceScanner from './pages/AttendanceScanner';
+import AttendanceHistory from './pages/AttendanceHistory';
+import Settings from './pages/Settings';
+import NearbyServices from './pages/NearbyServices';
+import RoomRequests from './pages/RoomRequests';
+import ManageRoomRequests from './pages/ManageRoomRequests';
+import Fines from './pages/Fines';
 
 function App() {
   return (
@@ -78,6 +86,17 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute allowedRoles={['Admin']}>
+              <Layout>
+                <Settings />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         {/* Shared Routes (Visible to both but filtered content) */}
         <Route
           path="/payments"
@@ -85,6 +104,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <Payments />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maintenance"
+          element={
+            <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+              <Layout>
+                <Maintenance />
               </Layout>
             </ProtectedRoute>
           }
@@ -110,6 +139,16 @@ function App() {
           }
         />
         <Route
+          path="/fines"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Fines />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/profile"
           element={
             <ProtectedRoute>
@@ -125,6 +164,56 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <RoomDetail />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/scanner"
+          element={
+            <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
+              <Layout>
+                <AttendanceScanner />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/attendance"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <AttendanceHistory />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/nearby"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <NearbyServices />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/room-requests"
+          element={
+            <ProtectedRoute allowedRoles={['Student']}>
+              <Layout>
+                <RoomRequests />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manage-room-requests"
+          element={
+            <ProtectedRoute allowedRoles={['Admin']}>
+              <Layout>
+                <ManageRoomRequests />
               </Layout>
             </ProtectedRoute>
           }
@@ -147,7 +236,6 @@ function App() {
 
 
 // Helper to choose dashboard based on role
-import { useAuth } from './context/AuthContext';
 const DashboardSelector = () => {
   const { user } = useAuth();
   return (user?.role === 'Admin' || user?.role === 'Staff') ? <Dashboard /> : <StudentDashboard />;

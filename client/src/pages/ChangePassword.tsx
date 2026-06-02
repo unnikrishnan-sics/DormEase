@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Box, Container, Paper, Typography, TextField, Button, Alert, CircularProgress } from '@mui/material';
+import { Box, Container, Paper, Typography, TextField, Button, Alert, CircularProgress, InputAdornment, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 import { motion } from 'framer-motion';
 
@@ -11,6 +12,7 @@ const ChangePassword: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   const { user, login } = useAuth();
@@ -63,19 +65,37 @@ const ChangePassword: React.FC = () => {
               required
               fullWidth
               label="New Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               autoFocus
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               margin="normal"
               required
               fullWidth
               label="Confirm New Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <Button
               type="submit"

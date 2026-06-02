@@ -308,6 +308,33 @@ exports.verifyPaymentSession = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+// @desc    Manually verify/approve a payment (e.g., Cash)
+// @route   PUT /api/payments/:id/verify
+// @access  Private/Admin
+exports.verifyPayment = async (req, res) => {
+    try {
+        const payment = await Payment.findById(req.params.id);
+        
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment record not found' });
+        }
+
+        if (payment.paymentStatus === 'Paid') {
+            return res.status(400).json({ message: 'Payment is already marked as Paid' });
+        }
+
+        // Fulfill the payment logic (Updates student profile, room status, etc.)
+        await fulfillPayment(payment);
+
+        res.json({
+            message: 'Payment verified successfully',
+            payment
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // @desc    Get upcoming expiring subscriptions (3-day window)
 // @route   GET /api/payments/expiring
 // @access  Private/Admin

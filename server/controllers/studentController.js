@@ -4,13 +4,16 @@ const Room = require('../models/Room');
 const Payment = require('../models/Payment');
 const { sendCredentialsEmail } = require('../utils/emailService');
 const crypto = require('crypto');
+const Settings = require('../models/Settings');
 
 // @desc    Get all students
 // @route   GET /api/students
 // @access  Private/Admin/Staff
 exports.getStudents = async (req, res) => {
     try {
-        const students = await Student.find().populate('userId', 'name email contactDetails').populate('currentRoomId', 'roomNumber');
+        const students = await Student.find()
+            .populate('userId', 'name email contactDetails')
+            .populate('currentRoomId', 'roomNumber');
         res.json(students);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -24,7 +27,8 @@ exports.addStudent = async (req, res) => {
     try {
         const { 
             name, email, phone, permanentAddress, emergencyContact, 
-            parentGuardianName, currentRoomId, packageType 
+            parentGuardianName, currentRoomId, packageType, paymentMethod,
+            dietaryPreference, allergies
         } = req.body;
 
         // 1. Check if user already exists
@@ -68,6 +72,30 @@ exports.addStudent = async (req, res) => {
         const endDate = new Date();
         endDate.setMonth(endDate.getMonth() + months);
 
+        // 4.1 Get and increment student ID sequence
+        let settings = await Settings.findOne();
+        if (!settings) {
+            settings = await Settings.create({});
+        }
+        const nextId = settings.lastStudentIdSeq + 1;
+        const generatedId = `DES${nextId}`;
+        settings.lastStudentIdSeq = nextId;
+        await settings.save();
+
+        // Parse allergies if it's a string (from FormData)
+        let processedAllergies = [];
+        if (allergies) {
+            if (typeof allergies === 'string') {
+                try {
+                    processedAllergies = JSON.parse(allergies);
+                } catch (e) {
+                    processedAllergies = allergies.split(',').map(s => s.trim()).filter(s => s !== '');
+                }
+            } else if (Array.isArray(allergies)) {
+                processedAllergies = allergies;
+            }
+        }
+        
         const student = await Student.create({
             userId: user._id,
             emergencyContact,
@@ -76,7 +104,13 @@ exports.addStudent = async (req, res) => {
             currentRoomId,
             packageType: packageType || 'Monthly',
             subscriptionEndDate: null, // Set ONLY after payment
-            bookingStatus: 'Pending' // Keep Waitlisted/Pending until payment
+            bookingStatus: 'Pending', // Keep Waitlisted/Pending until payment
+            studentId: generatedId,
+            lastStatus: 'IN',
+            dietaryPreference: dietaryPreference || 'Non-Veg',
+            allergies: processedAllergies || [],
+            preferredPaymentMethod: paymentMethod || 'Card',
+            idProof: req.file ? req.file.path.replace(/\\/g, '/') : null
         });
 
         // 4.5. Update Room Occupancy
@@ -97,7 +131,7 @@ exports.addStudent = async (req, res) => {
                 userId: user._id,
                 amount: finalAmount,
                 paymentStatus: 'Pending',
-                paymentMethod: 'Card',
+                paymentMethod: paymentMethod || 'Card',
                 packageType: packageType || 'Monthly'
             });
         }
@@ -124,7 +158,8 @@ exports.updateStudent = async (req, res) => {
 
         if (student) {
             // Check if user is the student or admin
-            if (req.user.role !== 'Admin' && student.userId.toString() !== req.user._id.toString()) {
+            // Check if user is the student, admin, or staff
+            if (req.user.role !== 'Admin' && req.user.role !== 'Staff' && student.userId.toString() !== req.user._id.toString()) {
                 return res.status(401).json({ message: 'Not authorized' });
             }
 
@@ -181,6 +216,20 @@ exports.updateStudent = async (req, res) => {
             student.parentGuardianName = req.body.parentGuardianName || student.parentGuardianName;
             student.permanentAddress = req.body.permanentAddress || student.permanentAddress;
             student.bookingStatus = req.body.bookingStatus || student.bookingStatus;
+            
+            if (req.body.dietaryPreference) student.dietaryPreference = req.body.dietaryPreference;
+            
+            if (req.body.allergies) {
+                if (typeof req.body.allergies === 'string') {
+                    try {
+                        student.allergies = JSON.parse(req.body.allergies);
+                    } catch (e) {
+                        student.allergies = req.body.allergies.split(',').map(s => s.trim()).filter(s => s !== '');
+                    }
+                } else {
+                    student.allergies = req.body.allergies;
+                }
+            }
 
             const updatedStudent = await student.save();
             res.json(updatedStudent);
@@ -310,12 +359,18 @@ exports.updateMyProfile = async (req, res) => {
             return res.status(404).json({ message: 'Student profile not found' });
         }
 
-        const { phone, emergencyContact, permanentAddress, parentGuardianName } = req.body;
+        const { 
+            phone, emergencyContact, permanentAddress, parentGuardianName,
+            allergies, dietaryPreference 
+        } = req.body;
 
         // Update Student model fields
         student.emergencyContact = emergencyContact || student.emergencyContact;
         student.permanentAddress = permanentAddress || student.permanentAddress;
         student.parentGuardianName = parentGuardianName || student.parentGuardianName;
+        
+        if (allergies) student.allergies = allergies;
+        if (dietaryPreference) student.dietaryPreference = dietaryPreference;
 
         // Update User model contact details (phone)
         if (phone) {
