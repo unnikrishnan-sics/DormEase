@@ -146,3 +146,69 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Request forgot password OTP
+// @route   POST /api/auth/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User with this email does not exist' });
+        }
+
+        // Generate a 6-digit random OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Set expiry to 10 minutes
+        user.resetPasswordOTP = otp;
+        user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
+        await user.save();
+
+        // Print OTP to terminal in an eye-catching block
+        console.log(`
+==================================================
+🔑 PASSWORD RESET REQUEST
+==================================================
+📧 Email: \x1b[36m${email}\x1b[0m
+🔢 OTP:   \x1b[32m\x1b[1m${otp}\x1b[0m
+⏱️ Expiry: 10 minutes (Expires at: ${new Date(user.resetPasswordExpires).toLocaleTimeString()})
+==================================================
+`);
+
+        res.json({ message: 'OTP sent successfully! Please check the terminal.' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Verify OTP and Reset Password
+// @route   POST /api/auth/reset-password
+// @access  Public
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        const user = await User.findOne({ 
+            email,
+            resetPasswordOTP: otp,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired OTP' });
+        }
+
+        // Save new password (pre-save hook will hash it automatically)
+        user.password = newPassword;
+        user.resetPasswordOTP = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        res.json({ message: 'Password reset successful! You can now log in.' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
