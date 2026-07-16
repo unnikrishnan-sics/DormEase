@@ -23,3 +23,8 @@ dist-ssr/
 # OS
 .DS_Store
 Thumbs.db
+
+# Zip creation scripts
+create_zips.js
+create_zips.py
+
