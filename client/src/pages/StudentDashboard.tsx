@@ -53,10 +53,10 @@ const StudentDashboard: React.FC = () => {
     if (!data?.todayMenu) return { label: 'TBD', items: 'Menu not available' };
     const hour = new Date().getHours();
     
-    if (hour < 10) return { label: 'BREAKFAST', items: data.todayMenu.breakfast.items.join(', ') };
-    if (hour < 15) return { label: 'LUNCH', items: data.todayMenu.lunch.items.join(', ') };
-    if (hour < 19) return { label: 'SNACKS', items: data.todayMenu.snacks.items.join(', ') };
-    return { label: 'DINNER', items: data.todayMenu.dinner.items.join(', ') };
+    if (hour < 10) return { label: 'BREAKFAST', items: data.todayMenu.breakfast?.items?.map((i: any) => i.name).join(', ') || 'No items listed' };
+    if (hour < 15) return { label: 'LUNCH', items: data.todayMenu.lunch?.items?.map((i: any) => i.name).join(', ') || 'No items listed' };
+    if (hour < 19) return { label: 'SNACKS', items: data.todayMenu.snacks?.items?.map((i: any) => i.name).join(', ') || 'No items listed' };
+    return { label: 'DINNER', items: data.todayMenu.dinner?.items?.map((i: any) => i.name).join(', ') || 'No items listed' };
   };
 
   const nextMeal = getNextMeal();
@@ -116,7 +116,7 @@ const StudentDashboard: React.FC = () => {
             </Button>
           }
         >
-          You have a pending balance of ${data.financials.pendingAmount.toLocaleString()}. Please clear it to avoid service restrictions.
+          You have a pending balance of ${data?.financials?.pendingAmount?.toLocaleString()}. Please clear it to avoid service restrictions.
         </Alert>
       )}
 
@@ -175,7 +175,7 @@ const StudentDashboard: React.FC = () => {
                 <Box>
                   <Typography variant="caption" color="text.primary" fontWeight="800" display="block" sx={{ mb: 0.5 }}>ROOMMATES</Typography>
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    {data?.roommates?.length > 0 ? (
+                    {data?.roommates && data.roommates.length > 0 ? (
                       data.roommates.map((name: string, i: number) => (
                         <Chip key={i} label={name} size="small" variant="soft" sx={{ fontSize: '0.75rem' }} />
                       ))
@@ -299,7 +299,7 @@ const StudentDashboard: React.FC = () => {
                   </Typography>
                   <Typography variant="body2" color="text.primary" fontWeight="500" sx={{ mt: 0.5, lineHeight: 1.5 }}>
                     Welcome to <Box component="span" sx={{ fontWeight: 800, color: 'primary.main' }}>Room {data.room.roomNumber}</Box>. 
-                    You have <Box component="span" sx={{ fontWeight: 800, color: 'primary.main' }}>{data.roommates.length}</Box> awesome roommate(s). 
+                    You have <Box component="span" sx={{ fontWeight: 800, color: 'primary.main' }}>{data.roommates?.length || 0}</Box> awesome roommate(s). 
                     Your room is a <Box component="span" sx={{ fontWeight: 800, color: 'primary.main' }}>{data.room.roomType}</Box>—make sure to check the room guidelines soon!
                   </Typography>
                 </Box>
